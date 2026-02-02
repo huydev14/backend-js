@@ -3,16 +3,30 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>TO-DO JS</title>
+		<title>Learn Javascript</title>
 	</head>
 
 	<body>
 		<h1>Create new todo</h1>
-		<div>
-			<label for="todo">Nhập To-do:</label>
-			<input id="todo" type="text" />
+		<div style="display: flex; flex-direction: column; gap: 15px">
+			<div>
+				<label>Title</label>
+				<input id="title" type="text" />
+			</div>
 
-			<button id="submitBtn" type="submit">Save</button>
+			<div>
+				<label>Author</label>
+				<input id="author" type="text" />
+			</div>
+
+			<div>
+				<label>Content</label>
+				<input id="content" type="text" />
+			</div>
+
+			<div>
+				<button id="saveBtn" type="submit">Save</button>
+			</div>
 		</div>
 
 		<h2>To do list</h2>
@@ -20,14 +34,15 @@
 			<thead>
 				<tr>
 					<th>ID</th>
-					<th>To-do name</th>
+					<th>Title</th>
+					<th>Author</th>
+					<th>Content</th>
 					<th>Action</th>
 				</tr>
 			</thead>
 
-			<tbody>
-				
-			</tbody>
+			<tbody></tbody>
+			
 		</table>
 
 		<script src="script.js"></script>

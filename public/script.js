@@ -1,48 +1,19 @@
-const submitBtn = document.getElementById("submitBtn");
-const todoInput = document.getElementById("todo");
+(async () => {
+	const res = await fetch("http://localhost:8000/blogs");
+	const data = await res.json();
 
-// Local storage key
-const TODO_KEY = "todo";
+	console.log(data);
 
-submitBtn.addEventListener("click", () => {
-	const myTodo = {
-		id: getRandomInt(1, 1000),
-		name: todoInput.value,
-	};
-
-	const currentTodoStr = localStorage.getItem(TODO_KEY);
-
-	if (currentTodoStr) {
-		// Convert from string to object
-		const currentTodo = JSON.parse(currentTodoStr);
-
-		// Insert new todo
-		currentTodo.push(myTodo);
-
-		// Convert new todo object and push it to local storage
-		localStorage.setItem(TODO_KEY, JSON.stringify(currentTodo));
-	} else {
-		localStorage.setItem(TODO_KEY, JSON.stringify([myTodo]));
-	}
-
-	window.location.reload();
-});
-
-const generateTodoData = () => {
 	const tbody = document.querySelector("table tbody");
 
-	const todoData = localStorage.getItem(TODO_KEY);
-	if (todoData) {
-		const dataObj = JSON.parse(todoData);
-
-		console.log(dataObj);
-
-		if (dataObj && dataObj.length) {
-			dataObj.forEach((data) => {
-				tbody.innerHTML += `
+	if (data && data.length) {
+		data.forEach((data) => {
+			tbody.innerHTML += `
 			<tr>
 				<td>${data.id}</td>
-				<td>${data.name}</td>
+				<td>${data.title}</td>
+				<td>${data.author}</td>
+				<td>${data.content}</td>
 				<td>
 					<button 
 						data-id=${data.id} 
@@ -51,41 +22,93 @@ const generateTodoData = () => {
 				</td>
 			</tr>
 			`;
+		});
+	}
+})().then(() => {
+	handleDeleteBtns();
+});
+
+const handleAddNewBlog = () => {
+	const title = document.getElementById("title");
+	const author = document.getElementById("author");
+	const content = document.getElementById("content");
+
+	const saveBtn = document.getElementById("saveBtn");
+
+	saveBtn.addEventListener("click", async (event) => {
+
+		event.preventDefault();
+
+		// Call api to create a new blog
+		const rawResponse = await fetch("http://localhost:8000/blogs", {
+			method: "POST",
+			headers: {
+				Accept: "application/json",
+				"Content-type": "application/json",
+			},
+			body: JSON.stringify({
+				title: title.value,
+				author: author.value,
+				content: content.value,
+			}),
+		});
+
+		const data = await rawResponse.json();
+
+		addNewRowToEnd(data);
+
+		console.log("API RESPONSE:", data);
+	});
+};
+
+const addNewRowToEnd = (data) => {
+	const tbody = document.querySelector("table tbody");
+
+	newRow.innerHTML += `
+			<tr>
+				<td>${data.id}</td>
+				<td>${data.title}</td>
+				<td>${data.author}</td>
+				<td>${data.content}</td>
+				<td>
+					<button 
+						data-id=${data.id} 
+						class="btn-delete">Delete
+					</button>
+				</td>
+			</tr>
+			`;
+
+	tbody.appendChild(newRow);
+};
+
+const handleDeleteBtns = () => {
+	const delBtns = document.querySelectorAll(".btn-delete");
+
+	if (delBtns) {
+		delBtns.forEach((btn) => {
+			btn.addEventListener("click", async (event) => {
+				
+				event.preventDefault();
+
+				const id = btn.getAttribute("data-id");
+
+				// Call api to delete a blog
+				const rawResponse = await fetch(`http://localhost:8000/blogs/${id}`, {
+					method: "DELETE",
+					headers: {
+						Accept: "application/json",
+						"Content-Type": "application/json",
+					},
+				});
+				const data = await rawResponse.json();
+
+				// Delete HTML row
+				const row = btn.closest("tr");
+				row.remove();
 			});
-		}
+		});
 	}
 };
 
-generateTodoData();
-
-const deleteBtns = document.querySelectorAll(".btn-delete");
-
-if (deleteBtns) {
-	deleteBtns.forEach((btn) => {
-
-		btn.addEventListener("click", () => {
-			const id = btn.getAttribute("data-id");
-			handleDeleteTodo(id);
-		})
-	});
-}
-
-const handleDeleteTodo = (id) => {
-	const todoDataStr = localStorage.getItem(TODO_KEY);
-
-	if(todoDataStr){
-		const todoData = JSON.parse(todoDataStr);
-
-		const newTodo = todoData.filter(todo => todo.id !== Number(id));
-
-		localStorage.setItem(TODO_KEY, JSON.stringify(newTodo));
-		window.location.reload();
-	}
-}
-
-// Helper
-function getRandomInt(min, max) {
-	min = Math.ceil(min);
-	max = Math.ceil(max);
-	return Math.floor(Math.random() * (max - min + 1) + min);
-}
+handleAddNewBlog();
